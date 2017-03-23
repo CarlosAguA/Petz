@@ -17,6 +17,9 @@ import com.example.android.petz.data.PetContract.PetEntry;
 
 public class CatalogActivity extends AppCompatActivity {
 
+    /** Database helper that will provide us access to the database */
+    private PetDbHelper mDbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,8 +35,7 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
 
-       displayDatabaseInfo();
-
+        mDbHelper = new PetDbHelper(this) ;
     }
 
     @Override
@@ -69,8 +71,6 @@ public class CatalogActivity extends AppCompatActivity {
 
     private void insertPet() {
 
-        PetDbHelper mDbHelper = new PetDbHelper(this);
-        // Gets the data repository in write mode
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -80,7 +80,7 @@ public class CatalogActivity extends AppCompatActivity {
         values.put(PetEntry.COLUMN_PET_WEIGHT, 7);
 
         //Insert the instance of the ContentValues object that contains a map of key-value pairs
-        db.insert(PetEntry.TABLE_NAME, null, values);
+        long newRowId =  db.insert(PetEntry.TABLE_NAME, null, values);
     }
 
     /**
@@ -88,9 +88,6 @@ public class CatalogActivity extends AppCompatActivity {
      * the pets database.
      */
     private void displayDatabaseInfo() {
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
-        PetDbHelper mDbHelper = new PetDbHelper(this);
 
         // Create and/or open a database to read from it
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
