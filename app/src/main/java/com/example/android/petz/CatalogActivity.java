@@ -131,18 +131,34 @@ public class CatalogActivity extends AppCompatActivity {
 
             /* 1. Create header */
             displayView.setText("The pets table contains " + cursor.getCount() + " pets.\n\n");
-            displayView.append(PetEntry._ID + "-" + PetEntry.COLUMN_PET_NAME + "\n") ;
+            displayView.append(PetEntry._ID + " - "
+                    + PetEntry.COLUMN_PET_NAME
+                    + " - " + PetEntry.COLUMN_PET_BREED
+                    + " - " + PetEntry.COLUMN_PET_GENDER
+                    + " - " + PetEntry.COLUMN_PET_WEIGHT + "\n") ;
 
-            /* 2. figure out the index of each column */
+            /* 2. figure out the index of each column (y axis ) */
             int idColumnIndex = cursor.getColumnIndex(PetEntry._ID) ;
             int nameColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME) ;
+            int breedColumnIndex =  cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED) ;
+            int genderColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER) ;
+            int weightColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT) ;
 
              /* 3. Iterate until cursor.moveToNext() returns false */
             while (cursor.moveToNext()) {
+                //Save the values form the individual db field in variables
                 int currentID = cursor.getInt(idColumnIndex);
                 String currentName = cursor.getString(nameColumnIndex);
-                displayView.append(("\n" + currentID + " - " +
-                        currentName ) ) ;
+                String currentBreed = cursor.getString(breedColumnIndex);
+                String currentGender = cursor.getString(genderColumnIndex);
+                String currentWeight = cursor.getString(weightColumnIndex);
+
+                displayView.append(("\n"
+                        + currentID + " - "
+                        + currentName + " - "
+                        + currentBreed + " - "
+                        + currentGender + " - "
+                        + currentWeight ) ) ;
             }
 
         } finally {
