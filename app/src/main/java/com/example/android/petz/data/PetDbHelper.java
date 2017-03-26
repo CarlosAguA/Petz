@@ -1,6 +1,7 @@
 package com.example.android.petz.data;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import com.example.android.petz.data.PetContract.PetEntry;
@@ -11,6 +12,8 @@ import com.example.android.petz.data.PetContract.PetEntry;
 
 //1. Create a class that extends from SQLiteOpenHelper
 public class PetDbHelper extends SQLiteOpenHelper {
+
+    private PetDbHelper mDbHelper;
 
     //2.Create constants for database name and database version
     public static final int DATABASE_VERSION = 1;
@@ -41,4 +44,5 @@ public class PetDbHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
         // The database is still at version 1, so there's nothing to do be done here..
     }
+
 }

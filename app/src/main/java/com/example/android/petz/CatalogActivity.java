@@ -15,6 +15,8 @@ import android.widget.TextView;
 import com.example.android.petz.data.PetDbHelper;
 import com.example.android.petz.data.PetContract.PetEntry;
 
+import static android.R.attr.data;
+
 public class CatalogActivity extends AppCompatActivity {
 
     /** Database helper that will provide us access to the database */
@@ -103,9 +105,9 @@ public class CatalogActivity extends AppCompatActivity {
     private void displayDatabaseInfo() {
 
         // Create and/or open a database to read from it
+        // it should get the data repository in read
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        //String[] projection = { "*" }; Asi lo tenía al inicio pero tambien debe ser posible abajo
         String[] projection = {
                 PetEntry._ID,
                 PetEntry.COLUMN_PET_NAME,
@@ -113,6 +115,7 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_GENDER,
                 PetEntry.COLUMN_PET_WEIGHT };
 
+        // use the query() method to retrieve at least one column of data.
         Cursor cursor = db.query(
                 PetEntry.TABLE_NAME,
                 projection,
@@ -122,12 +125,11 @@ public class CatalogActivity extends AppCompatActivity {
                 null,
                 null);
 
-
         TextView displayView = (TextView) findViewById(R.id.text_view_pet);
+
         try {
             // Display the number of rows in the Cursor (which reflects the number of rows in the
             // pets table in the database).
-
 
             /* 1. Create header */
             displayView.setText("The pets table contains " + cursor.getCount() + " pets.\n\n");
@@ -166,5 +168,6 @@ public class CatalogActivity extends AppCompatActivity {
             // resources and makes it invalid.
             cursor.close();
         }
+
     }
 }
