@@ -12,17 +12,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-
-import com.example.android.petz.data.PetContract;
-import com.example.android.petz.data.PetDbHelper;
 import com.example.android.petz.data.PetContract.PetEntry;
 
-import static android.R.attr.data;
-
 public class CatalogActivity extends AppCompatActivity {
-
-    /** Database helper that will provide us access to the database */
-    private PetDbHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +31,6 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
 
-        // To access our database, we instantiate our subclass of SQLiteOpenHelper
-        // and pass the context, which is the current activity.
-        mDbHelper = new PetDbHelper(this);
     }
 
     @Override
@@ -79,8 +68,6 @@ public class CatalogActivity extends AppCompatActivity {
      * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
      */
     private void insertPet() {
-        // Gets the database in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // Create a ContentValues object where column names are the keys,
         // and Toto's pet attributes are the values.
@@ -97,7 +84,8 @@ public class CatalogActivity extends AppCompatActivity {
         // this is set to "null", then the framework will not insert a row when
         // there are no values).
         // The third argument is the ContentValues object containing the info for Toto.
-        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI,values);
+
     }
 
     /**
@@ -106,27 +94,12 @@ public class CatalogActivity extends AppCompatActivity {
      */
     private void displayDatabaseInfo() {
 
-        // Create and/or open a database to read from it
-        // it should get the data repository in read
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
         String[] projection = {
                 PetEntry._ID,
                 PetEntry.COLUMN_PET_NAME,
                 PetEntry.COLUMN_PET_BREED,
                 PetEntry.COLUMN_PET_GENDER,
                 PetEntry.COLUMN_PET_WEIGHT };
-
-
-       /* // use the query() method to retrieve at least one column of data.
-        Cursor cursor = db.query(
-                PetEntry.TABLE_NAME,
-                projection,
-                null,
-                null,
-                null,
-                null,
-                null);*/
 
         Cursor cursor = getContentResolver().query(
                 PetEntry.CONTENT_URI,   // The content URI

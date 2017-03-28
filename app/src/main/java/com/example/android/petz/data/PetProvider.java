@@ -8,7 +8,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.CancellationSignal;
+import android.provider.UserDictionary;
 import android.support.annotation.Nullable;
+import android.util.Log;
+
+import static android.R.attr.id;
 
 /**
  * Created by Paviliondm4 on 3/26/2017.
@@ -49,8 +53,6 @@ public class PetProvider extends ContentProvider {
         sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PETS);
         sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS , PETS);
     }
-
-
 
     /**
      * Initialize the provider and the database helper object.
@@ -115,13 +117,43 @@ public class PetProvider extends ContentProvider {
         return cursor ;
     }
 
-    /**
-     * Insert new data into the provider with the given ContentValues.
-     */
+
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
-        return null;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PETS:
+                return insertPet(uri, contentValues);
+            default:
+                throw new IllegalArgumentException("Insertion is not supported for " + uri);
+        }
     }
+
+    /**
+     * Insert a pet into the database with the given content values. Return the new content URI
+     * for that specific row in the database.
+     */
+    private Uri insertPet(Uri uri, ContentValues values) {
+
+        // Get writeable database
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        // TODO: Insert a new pet into the pets database table with the given ContentValues
+        // Create a ContentValues object where column names are the keys,
+        // and Toto's pet attributes are the values.
+        values.put(PetContract.PetEntry.COLUMN_PET_NAME, "Toto");
+        values.put(PetContract.PetEntry.COLUMN_PET_BREED, "Terrier");
+        values.put(PetContract.PetEntry.COLUMN_PET_GENDER, PetContract.PetEntry.GENDER_MALE);
+        values.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, 7);
+
+        // Insert the new pet with the given values
+        long id = database.insert(PetContract.PetEntry.TABLE_NAME, null, values);
+
+        // Once we know the ID of the new row in the table,
+        // return the new URI with the ID appended to the end of it
+        return ContentUris.withAppendedId(uri, id);
+    }
+
 
     /**
      * Updates the data at the given selection and selection arguments, with the new ContentValues.
