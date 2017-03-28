@@ -1,9 +1,11 @@
 package com.example.android.petz.data;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.CancellationSignal;
 import android.support.annotation.Nullable;
@@ -68,7 +70,49 @@ public class PetProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
-        return null ;
+        /*  Get database object */
+        SQLiteDatabase database = mDbHelper.getReadableDatabase() ;
+
+        Cursor cursor ;
+
+        /* Help us find out what kind of input uri is passing to us */
+        int match =  sUriMatcher.match(uri) ;
+
+        switch (match){
+            case PETS:
+                // use the query() method to retrieve at least one column of data.
+                // For the PETS code, query the pets table directly with the given
+                // projection, selection, selection arguments, and sort order. The cursor
+                // could contain multiple rows of the pets table.
+                // TODO: Perform database query on pets table
+               cursor = database.query(
+                        PetContract.PetEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break ;
+            case PET_ID:
+                // SQLITE statement: SELECT id, name FROM pets WHERE _id=5 ;
+                selection = PetContract.PetEntry._ID + "=?" ;
+                /*Projection :{ "_id" , "name" } */
+                //Just using id and name for query given by the programmer
+                selectionArgs = new String[] {String.valueOf(ContentUris.parseId(uri))} ;
+                cursor = database.query(
+                        PetContract.PetEntry.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder);
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot query unknown: " + uri);
+        }
+        return cursor ;
     }
 
     /**
