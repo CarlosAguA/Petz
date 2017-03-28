@@ -138,16 +138,13 @@ public class PetProvider extends ContentProvider {
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
-        // TODO: Insert a new pet into the pets database table with the given ContentValues
-        // Create a ContentValues object where column names are the keys,
-        // and Toto's pet attributes are the values.
-        values.put(PetContract.PetEntry.COLUMN_PET_NAME, "Toto");
-        values.put(PetContract.PetEntry.COLUMN_PET_BREED, "Terrier");
-        values.put(PetContract.PetEntry.COLUMN_PET_GENDER, PetContract.PetEntry.GENDER_MALE);
-        values.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, 7);
-
         // Insert the new pet with the given values
         long id = database.insert(PetContract.PetEntry.TABLE_NAME, null, values);
+        // If the ID is -1, then the insertion failed. Log an error and return null.
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
 
         // Once we know the ID of the new row in the table,
         // return the new URI with the ID appended to the end of it
