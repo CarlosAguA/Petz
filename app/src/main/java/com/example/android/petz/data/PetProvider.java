@@ -13,6 +13,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import static android.R.attr.id;
+import static android.R.attr.value;
 
 /**
  * Created by Paviliondm4 on 3/26/2017.
@@ -48,9 +49,7 @@ public class PetProvider extends ContentProvider {
         // should recognize. All paths added to the UriMatcher have a corresponding code to return
         // when a match is found.
 
-        // TODO: Add 2 content URIs to URI matcher
-
-        sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PETS);
+        sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS + "/#", PET_ID);
         sUriMatcher.addURI(PetContract.CONTENT_AUTHORITY, PetContract.PATH_PETS , PETS);
     }
 
@@ -137,6 +136,21 @@ public class PetProvider extends ContentProvider {
 
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        //Hint: You might want to write a method in the PetContract for determining
+       // whether a gender value is valid or not, using the gender constants declared there.
+        String name = values.getAsString(PetContract.PetEntry.COLUMN_PET_NAME);
+        if (name == null) {
+            throw new IllegalArgumentException("Pet requires a name");
+        }
+        String breed = values.getAsString(PetContract.PetEntry.COLUMN_PET_BREED);
+        if (breed == null) {
+            throw new IllegalArgumentException("Pet requires a breed");
+        }
+        int weight = values.getAsInteger(PetContract.PetEntry.COLUMN_PET_WEIGHT);
+        if (weight <= 0 || weight > 100 ) {
+            throw new IllegalArgumentException("Invalid weight for pet");
+        }
 
         // Insert the new pet with the given values
         long id = database.insert(PetContract.PetEntry.TABLE_NAME, null, values);
