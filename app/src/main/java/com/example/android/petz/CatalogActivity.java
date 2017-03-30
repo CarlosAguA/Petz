@@ -101,6 +101,8 @@ public class CatalogActivity extends AppCompatActivity {
                 PetEntry.COLUMN_PET_GENDER,
                 PetEntry.COLUMN_PET_WEIGHT };
 
+        //A method inside PetPRovider is being called. That method is query(). No direct
+        //interaction with SQLite is more efficient.
         Cursor cursor = getContentResolver().query(
                 PetEntry.CONTENT_URI,   // The content URI
                 projection,  // The columns to return for each row
