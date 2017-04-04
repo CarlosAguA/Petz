@@ -1,5 +1,6 @@
 package com.example.android.petz;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -18,11 +19,14 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 
 import com.example.android.petz.data.PetContract.PetEntry;
 import com.example.android.petz.data.PetCursorAdapter;
+
+import static android.R.id.message;
 
 public class CatalogActivity extends AppCompatActivity
         implements android.app.LoaderManager.LoaderCallbacks<Cursor> {
@@ -72,6 +76,7 @@ public class CatalogActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(CatalogActivity.this, EditorActivity.class);
+                intent.putExtra("fab_button", message);
                 startActivity(intent);
             }
         });
@@ -89,6 +94,21 @@ public class CatalogActivity extends AppCompatActivity
 
         //Kick off loader
         getLoaderManager().initLoader(PET_LOADER, null, this) ;
+
+        //Listener for the items of the listView
+        petListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                Uri currentPetUri = ContentUris.withAppendedId(PetEntry.CONTENT_URI, id);
+                //Open the editor Activity. and set the uri on the data field of the intent.
+                Intent intent = new Intent
+                        (CatalogActivity.this, EditorActivity.class).setData(currentPetUri);
+                intent.putExtra("list_item", message);
+                startActivity(intent);
+
+            }
+        });
 
     }
 

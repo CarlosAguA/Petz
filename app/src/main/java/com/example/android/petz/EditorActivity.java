@@ -1,6 +1,7 @@
 package com.example.android.petz;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v4.app.NavUtils;
@@ -22,6 +23,7 @@ import com.example.android.petz.data.PetContract.PetEntry;
 import com.example.android.petz.data.PetDbHelper;
 
 import static android.R.attr.name;
+import static android.R.attr.switchMinWidth;
 import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 import static android.os.Build.VERSION_CODES.M;
 
@@ -59,8 +61,23 @@ public class EditorActivity extends AppCompatActivity {
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
 
         setupSpinner();
-    }
 
+        Bundle bundle = getIntent().getExtras();
+        String message = bundle.getString("message");
+
+        // You can be pretty confident that the intent will not be null here.
+        Intent intent = getIntent();
+        Uri currentPetUri = intent.getData();
+
+        if (currentPetUri == null) {
+
+            setTitle(R.string.editor_activity_title_edit_pet);
+        } else {
+
+            setTitle(R.string.editor_activity_title_new_pet);
+            }
+        }
+    
     private void setupSpinner() {
         // Create adapter for spinner. The list options are from the String array it will use
         // the spinner will use the default layout
