@@ -415,8 +415,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      * Perform the deletion of the pet in the database.
      */
     private void deletePet() {
-        // TODO: Implement this method
-
         // Deletes the pet that match the selection criteria
         // Defines a variable to contain the number of rows deleted
 
