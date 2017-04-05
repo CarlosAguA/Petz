@@ -16,11 +16,13 @@ import android.support.v7.app.AppCompatActivity;
 
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 import com.example.android.petz.data.PetContract.PetEntry;
@@ -130,7 +132,7 @@ public class CatalogActivity extends AppCompatActivity
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
-                // Do nothing for now
+                deletePet();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -158,6 +160,19 @@ public class CatalogActivity extends AppCompatActivity
         // The third argument is the ContentValues object containing the info for Toto.
         Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI,values);
 
+    }
+
+    private void deletePet() {
+        // Deletes the pet that match the selection criteria
+        // Defines a variable to contain the number of rows deleted
+
+        int rowsDeleted = getContentResolver().delete(
+                PetEntry.CONTENT_URI,   // the user dictionary content URI
+                null,            // the column to select on
+                null             // the value to compare to
+        );
+
+        Log.v("CatalogActivity", rowsDeleted + " rows deleted from pet database");
     }
 
 }
