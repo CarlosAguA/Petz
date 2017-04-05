@@ -1,7 +1,11 @@
 package com.example.android.petz;
 
+import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.v4.app.NavUtils;
@@ -16,18 +20,21 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.petz.data.PetContract;
 import com.example.android.petz.data.PetContract.PetEntry;
 import com.example.android.petz.data.PetDbHelper;
 
+import java.util.Set;
+
 import static android.R.attr.name;
 import static android.R.attr.switchMinWidth;
 import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 import static android.os.Build.VERSION_CODES.M;
 
-public class EditorActivity extends AppCompatActivity {
+public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String LOG_TAG = EditorActivity.class.getSimpleName();
 
@@ -49,6 +56,84 @@ public class EditorActivity extends AppCompatActivity {
      */
     private int mGender = 0;
 
+    /* Loader ID for PET_LOADER */
+    private static final int PET_LOADER = 0 ;
+
+    //Uri for passing the uri within the onCreateLoader.
+    private Uri currentPetUri ;
+
+    @Override
+    public Loader onCreateLoader(int i, Bundle bundle) {
+
+        // Since the editor shows all pet attributes, define a projection that contains
+        // all columns from the pet table
+        String[] projection = {
+                PetEntry._ID,
+                PetEntry.COLUMN_PET_NAME,
+                PetEntry.COLUMN_PET_BREED,
+                PetEntry.COLUMN_PET_GENDER,
+                PetEntry.COLUMN_PET_WEIGHT };
+
+        // This loader will execute the ContentProvider's query method on a background thread
+        return new CursorLoader(this,   // Parent activity context
+                currentPetUri,         // Query the content URI for the current pet
+                projection,             // Columns to include in the resulting Cursor
+                null,                   // No selection clause
+                null,                   // No selection arguments
+                null);                  // Default sort order
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+        if (cursor.moveToFirst()) {
+            // Find the columns of pet attributes that we're interested in
+            int nameColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_NAME);
+            int breedColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_BREED);
+           int genderColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_GENDER);
+            int weightColumnIndex = cursor.getColumnIndex(PetEntry.COLUMN_PET_WEIGHT);
+
+            // Extract out the value from the Cursor for the given column index
+            String petName = cursor.getString(nameColumnIndex);
+            String petBreed = cursor.getString(breedColumnIndex);
+            int petGender = cursor.getInt(genderColumnIndex);
+            int petWeight = cursor.getInt(weightColumnIndex);
+
+            //Set the retrieved info from the pets table in the editTexts
+            mNameEditText.setText(petName);
+            mBreedEditText.setText(petBreed);
+            mWeightEditText.setText(String.valueOf(petWeight));
+
+            // Gender is a dropdown spinner, so map the constant value from the database
+            // into one of the dropdown options (0 is Unknown, 1 is Male, 2 is Female).
+            // Then call setSelection() so that option is displayed on screen as the current selection.
+            switch (petGender) {
+                case PetEntry.GENDER_MALE:
+                    mGenderSpinner.setSelection(1);
+                    break;
+                case PetEntry.GENDER_FEMALE:
+                    mGenderSpinner.setSelection(2);
+                    break;
+                default:
+                    mGenderSpinner.setSelection(0);
+                    break;
+            }
+            mGenderSpinner.setSelection(petGender);
+
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader loader) {
+
+        //Clear editor fields if the loader resets.
+        mBreedEditText.setText("");
+        mNameEditText.setText("");
+        mWeightEditText.setText("");
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,21 +146,25 @@ public class EditorActivity extends AppCompatActivity {
         mGenderSpinner = (Spinner) findViewById(R.id.spinner_gender);
 
         setupSpinner();
-
-        Bundle bundle = getIntent().getExtras();
-        String message = bundle.getString("message");
-
+        
         // You can be pretty confident that the intent will not be null here.
         Intent intent = getIntent();
-        Uri currentPetUri = intent.getData();
+        currentPetUri = intent.getData();
 
         if (currentPetUri == null) {
 
-            setTitle(R.string.editor_activity_title_edit_pet);
+            setTitle(R.string.editor_activity_title_new_pet);
+
         } else {
 
-            setTitle(R.string.editor_activity_title_new_pet);
+            setTitle(R.string.editor_activity_title_edit_pet);
+            Log.i(LOG_TAG, "Test" + currentPetUri.toString() ) ;
+
             }
+
+        /*Initialize the loader  */
+        getLoaderManager().initLoader(PET_LOADER, null, this);
+
         }
     
     private void setupSpinner() {
