@@ -205,6 +205,17 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new pet, hide the "Delete" menu item.
+        if (currentPetUri == null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete);
+            menuItem.setVisible(false);
+        }
+        return true;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
@@ -229,7 +240,11 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         if (currentPetUri == null) {
 
-            setTitle(R.string.editor_activity_title_new_pet);
+            setTitle(getString(R.string.editor_activity_title_new_pet));
+
+            // Invalidate the options menu, so the "Delete" menu option can be hidden.
+                    // (It doesn't make sense to delete a pet that hasn't been created yet.)
+                            invalidateOptionsMenu();
 
         } else {
 
