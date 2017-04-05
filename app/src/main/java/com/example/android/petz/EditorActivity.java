@@ -1,6 +1,7 @@
 package com.example.android.petz;
 
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -38,16 +39,24 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     public static final String LOG_TAG = EditorActivity.class.getSimpleName();
 
-    /** EditText field to enter the pet's name */
+    /**
+     * EditText field to enter the pet's name
+     */
     private EditText mNameEditText;
 
-    /** EditText field to enter the pet's breed */
+    /**
+     * EditText field to enter the pet's breed
+     */
     private EditText mBreedEditText;
 
-    /** EditText field to enter the pet's weight */
+    /**
+     * EditText field to enter the pet's weight
+     */
     private EditText mWeightEditText;
 
-    /** EditText field to enter the pet's gender */
+    /**
+     * EditText field to enter the pet's gender
+     */
     private Spinner mGenderSpinner;
 
     /**
@@ -57,30 +66,33 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private int mGender = 0;
 
     /* Loader ID for PET_LOADER */
-    private static final int PET_LOADER = 0 ;
+    private static final int PET_LOADER = 0;
 
     //Uri for passing the uri within the onCreateLoader.
-    private Uri currentPetUri ;
+    private Uri currentPetUri;
 
     @Override
     public Loader onCreateLoader(int i, Bundle bundle) {
 
-        // Since the editor shows all pet attributes, define a projection that contains
-        // all columns from the pet table
-        String[] projection = {
-                PetEntry._ID,
-                PetEntry.COLUMN_PET_NAME,
-                PetEntry.COLUMN_PET_BREED,
-                PetEntry.COLUMN_PET_GENDER,
-                PetEntry.COLUMN_PET_WEIGHT };
+        if (currentPetUri != null) {
+            // Since the editor shows all pet attributes, define a projection that contains
+            // all columns from the pet table
+            String[] projection = {
+                    PetEntry._ID,
+                    PetEntry.COLUMN_PET_NAME,
+                    PetEntry.COLUMN_PET_BREED,
+                    PetEntry.COLUMN_PET_GENDER,
+                    PetEntry.COLUMN_PET_WEIGHT};
 
-        // This loader will execute the ContentProvider's query method on a background thread
-        return new CursorLoader(this,   // Parent activity context
-                currentPetUri,         // Query the content URI for the current pet
-                projection,             // Columns to include in the resulting Cursor
-                null,                   // No selection clause
-                null,                   // No selection arguments
-                null);                  // Default sort order
+            // This loader will execute the ContentProvider's query method on a background thread
+            return new CursorLoader(this,   // Parent activity context
+                    currentPetUri,         // Query the content URI for the current pet
+                    projection,             // Columns to include in the resulting Cursor
+                    null,                   // No selection clause
+                    null,                   // No selection arguments
+                    null);                  // Default sort order
+        }
+        return null ;
     }
 
     @Override
@@ -204,7 +216,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     }
 
-    private void insertPet(){
+    private void savePet(){
 
         /**
          * 1. Get all the data from the EditText fields
@@ -225,26 +237,71 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
        // Log.i(LOG_TAG, "Editor TAG: " + mWeightEditText.getText().toString()) ;
         String petWeight = mWeightEditText.getText().toString().trim();
 
+        //Before content values object
+        if( currentPetUri == null && TextUtils.isEmpty(petName) && TextUtils.isEmpty(petBreed)
+                && TextUtils.isEmpty(petWeight) && petGender.equals(getString(R.string.gender_unknown)) ) {
+            //Finish the activity if all fields are empty.
+            //finish();
+            return ;
+        }
+
         ContentValues values = new ContentValues();
         values.put(PetEntry.COLUMN_PET_NAME, petName );
         values.put(PetEntry.COLUMN_PET_BREED, petBreed );
         values.put(PetEntry.COLUMN_PET_GENDER, gender );
-        //Convert the string to int  for weight
-        values.put(PetEntry.COLUMN_PET_WEIGHT, Integer.parseInt(petWeight) );
 
-    // Insert a new pet into the provider, returning the content URI for the new pet.
-        Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
-
-        // Show a toast message depending on whether or not the insertion was successful
-        if (newUri == null) {
-            // If the new content URI is null, then there was an error with insertion.
-            Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            // Otherwise, the insertion was successful and we can display a toast.
-            Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
-                    Toast.LENGTH_SHORT).show();
+        //before placing the weight into the content value object
+        // If the weight is not provided by the user, don't try to parse the string into an
+        // integer value. Use 0 by default.
+        int weight = 0;
+        if (!TextUtils.isEmpty(petWeight)) {
+            weight = Integer.parseInt(petWeight);
         }
+
+        //Convert the string to int  for weight
+        values.put(PetEntry.COLUMN_PET_WEIGHT, weight );
+
+        // Condition Add a pet
+        if (currentPetUri == null) {
+
+            // Insert a new pet into the provider, returning the content URI for the new pet.
+            Uri newUri = getContentResolver().insert(PetEntry.CONTENT_URI, values);
+
+            // Show a toast message depending on whether or not the insertion was successful
+            if (newUri == null) {
+                // If the new content URI is null, then there was an error with insertion.
+                Toast.makeText(this, getString(R.string.editor_insert_pet_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the insertion was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_insert_pet_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        // Condition edit a pet
+        }else{
+            // Otherwise this is an EXISTING pet, so update the pet with content URI: mCurrentPetUri
+            // and pass in the new ContentValues. Pass in null for the selection and selection args
+            // because mCurrentPetUri will already identify the correct row in the database that
+            // we want to modify
+            int rowsAffected = getContentResolver().update(
+                    currentPetUri, // the user pet content URI
+                    values,               // the columns to update
+                    null,
+                    null ) ;
+
+            //Show a toast message depending on whether or not the update was successful.
+            if (rowsAffected == 0) {
+                // If no rows were affected, then there was an error with the update.
+                Toast.makeText(this, getString(R.string.editor_update_pet_failed),
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                // Otherwise, the update was successful and we can display a toast.
+                Toast.makeText(this, getString(R.string.editor_update_pet_successful),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
+
 
     }
 
@@ -263,7 +320,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 //Save data
-                insertPet();
+                savePet();
                 //Exit Activity
                 finish() ;
                 return true;
