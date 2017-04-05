@@ -10,6 +10,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.provider.UserDictionary;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -382,7 +383,62 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             }
         }
 
+    }
 
+    private void showDeleteConfirmationDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the postivie and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_dialog_msg);
+        builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the pet.
+                deletePet();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Perform the deletion of the pet in the database.
+     */
+    private void deletePet() {
+        // TODO: Implement this method
+
+        // Deletes the pet that match the selection criteria
+        // Defines a variable to contain the number of rows deleted
+
+       int mRowsDeleted = getContentResolver().delete(
+                currentPetUri,   // the user dictionary content URI
+                null,            // the column to select on
+                null             // the value to compare to
+        );
+
+        // Show a toast message depending on whether or not the delete was successful
+        if (mRowsDeleted == 0 ){
+            // If no rows were deleted, then there was an error with the delete.
+            Toast.makeText(this, R.string.editor_delete_pet_failed,
+                    Toast.LENGTH_SHORT ).show();
+        }else{
+            // Otherwise, the delete was successful and we can display a toast.
+            Toast.makeText(this, R.string.editor_delete_pet_successful,
+                    Toast.LENGTH_SHORT ).show();
+        }
+
+        //Close the activity after deleting
+        finish();
 
     }
 
@@ -406,8 +462,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 finish() ;
                 return true;
             // Respond to a click on the "Delete" menu option
+           /* This case is only accesible if the Activity is on edit mode but not on add mode */
             case R.id.action_delete:
-                // Do nothing for now
+                //add strng for pet deleted
+                showDeleteConfirmationDialog();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
